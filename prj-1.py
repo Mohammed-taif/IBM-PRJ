@@ -160,6 +160,10 @@ html_content = f"""
     <h2>Graphs</h2>
     <img src="subject_avg.png" width="400"><br>
     <img src="student_avg.png" width="400">
+    <br><br>
+    <div style="font-size: 1.2em; font-weight: bold;">
+        By: Mohammed Taif, Midhun, Azman
+    </div>
 </body>
 </html>
 """
