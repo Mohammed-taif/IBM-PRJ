@@ -49,10 +49,11 @@ def st_mean(std):
     print("Standard Deviattion :",statistics.stdev(marks[std]))
     print('\n')
 
-#THIS BLOCK OF CODE FINDS THE TOP PERFORMER
+#THIS BLOCK OF CODE PRINTS THE STUDENT PERFORMANCE ANALYSIS REPORT
 print("STUDENT PERFORMANCE ANALYSIS REPORT :\n")
 for students in marks:
     st_mean(students)
+#THIS BLOCK OF CODE FINDS THE TOP PERFORMER
 top_avg=0
 top_std=None
 for students in marks:
@@ -73,6 +74,7 @@ for students in marks:
 print(f"WEAK PERFORMER :{low_std}\nAVERAGE :{low_avg}")
 subject_avgs = []
 
+# Calculate average marks for each subject
 for i, subject in enumerate(subjects):
     subject_marks = [marks[student][i] for student in marks]
     avg = statistics.mean(subject_marks)
@@ -95,7 +97,7 @@ plt.ylabel("Average Marks")
 plt.savefig("student_avg.png")
 plt.close()
 
-# Build Student Analysis Section
+# DISPLAYING THE FULL REPORT IN HTML FORMAT
 student_analysis_html = ""
 for student in marks:
     student_analysis_html += f"""
@@ -154,4 +156,4 @@ html_content = f"""
 with open("report.html", "w") as f:
     f.write(html_content)
 
-print("✅ Full report generated! Open 'report.html' in your browser.")
+print("Report generated: report.html kindly check your browser to view it.")
