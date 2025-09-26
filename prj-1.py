@@ -78,43 +78,80 @@ for i, subject in enumerate(subjects):
     avg = statistics.mean(subject_marks)
     subject_avgs.append(avg)
 
-# Bar chart for subject averages
+# Prepare data for graphs
+student_names = list(marks.keys())
+student_avgs = [statistics.mean(marks[student]) for student in marks]
+
+# Save graphs instead of showing
 plt.bar(subjects, subject_avgs, color="skyblue")
 plt.title("Average Marks per Subject")
 plt.ylabel("Average Marks")
 plt.savefig("subject_avg.png")
 plt.close()
-student_names = list(marks.keys())
-student_avgs = [statistics.mean(marks[student]) for student in marks]
 
-# Bar chart for student averages
 plt.bar(student_names, student_avgs, color="orange")
 plt.title("Average Marks per Student")
 plt.ylabel("Average Marks")
 plt.savefig("student_avg.png")
 plt.close()
 
+# Build Student Analysis Section
+student_analysis_html = ""
+for student in marks:
+    student_analysis_html += f"""
+    <h3>{student}</h3>
+    <ul>
+        <li>Scores: {marks[student]}</li>
+        <li>Average: {statistics.mean(marks[student]):.2f}</li>
+        <li>Median: {statistics.median(marks[student]):.2f}</li>
+        <li>Mode: {statistics.mode(marks[student])}</li>
+        <li>Standard Deviation: {statistics.stdev(marks[student]):.2f}</li>
+    </ul>
+    """
+
+# Build Overall Analysis Section
+overall_html = f"""
+<h2>Overall Analysis</h2>
+<ul>
+    <li><b>Top Performer:</b> {top_std} (Average {top_avg:.2f})</li>
+    <li><b>Weak Performer:</b> {low_std} (Average {low_avg:.2f})</li>
+    <li><b>Strongest Subject:</b> {top_subject} (Average {max(subject_avgs):.2f})</li>
+    <li><b>Weakest Subject:</b> {low_subject} (Average {min(subject_avgs):.2f})</li>
+</ul>
+"""
+
+# Final HTML
 html_content = f"""
 <html>
 <head>
-    <title>Student Marks Analysis Report</title>
+    <title>Student Performance Report</title>
 </head>
 <body>
-    <h1>Student Marks Analysis Report</h1>
-    <h2>Average Marks of Each Subject</h2>
-    <ul>
-        {''.join(f"<li>{subject}: {avg:.2f}</li>" for subject, avg in zip(subjects, subject_avgs))}
-    </ul>
-    <h2>Subject with Highest Average</h2>
-    <p>{top_subject}: {top_avg:.2f}</p>
-    <h2>Subject with Lowest Average</h2>
-    <p>{low_subject}: {low_avg:.2f}</p>
-    <h2>Student Performance Analysis</h2>
-    <ul>
-        {''.join(f"<li>{student}: {statistics.mean(marks[student]):.2f}</li>" for student in marks)}
-    </ul>
+    <h1>Performance Report</h1>
+
+    <h2>Marks Table</h2>
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Student</th>
+            {''.join(f'<th>{s}</th>' for s in subjects)}
+        </tr>
+        {''.join(f"<tr><td>{st}</td>{''.join(f'<td>{m}</td>' for m in marks[st])}</tr>" for st in marks)}
+    </table>
+
+    <h2>Student Analysis</h2>
+    {student_analysis_html}
+
+    {overall_html}
+
+    <h2>Graphs</h2>
+    <img src="subject_avg.png" width="400"><br>
+    <img src="student_avg.png" width="400">
 </body>
 </html>
 """
-with open("report.html", "w") as file:
-    file.write(html_content)
+
+# Write to HTML file
+with open("report.html", "w") as f:
+    f.write(html_content)
+
+print("✅ Full report generated! Open 'report.html' in your browser.")
