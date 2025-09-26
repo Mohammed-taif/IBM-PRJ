@@ -127,9 +127,21 @@ html_content = f"""
 <html>
 <head>
     <title>Student Performance Report</title>
+    <style>
+        body {{
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+        }}
+        h1, h2, h3 {{
+            font-size: 1.5em;
+        }}
+        table {{
+            font-size: 1em;
+        }}
+    </style>
 </head>
 <body>
-    <h1>Performance Report</h1>
+    <h1><center>Performance Report</center></h1>
 
     <h2>Marks Table</h2>
     <table border="1" cellpadding="5">
