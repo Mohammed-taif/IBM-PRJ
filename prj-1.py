@@ -124,48 +124,111 @@ overall_html = f"""
 
 # Final HTML
 html_content = f"""
+
 <html>
 <head>
-    <title>Student Performance Report</title>
-    <style>
-        body {{
-            font-size: 18px;
-            font-family: Arial, sans-serif;
-        }}
-        h1, h2, h3 {{
-            font-size: 1.5em;
-        }}
-        table {{
-            font-size: 1em;
-        }}
-    </style>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+    
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(-45deg, #ff6ec4, #7873f5, #17ead9, #fce38a);
+      background-size: 400% 400%;
+      animation: gradient 10s ease infinite;
+    }
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
 </head>
-<body>
-    <h1><center>Performance Report</center></h1>
+<body bgcolor="lightyellow" text="black">
 
-    <h2>Marks Table</h2>
-    <table border="1" cellpadding="5">
-        <tr>
+    <h1 align="center" style="color: darkblue;">Student Performance Report</h1>
+
+    <h2 style="color: darkgreen;">Marks Table</h2>
+    <table border="1" cellpadding="5" cellspacing="0" width="70%" align="center" bgcolor="lightcyan">
+        <tr bgcolor="red">
             <th>Student</th>
-            {''.join(f'<th>{s}</th>' for s in subjects)}
+            <th>Maths</th>
+            <th>Science</th>
+            <th>English</th>
         </tr>
-        {''.join(f"<tr><td>{st}</td>{''.join(f'<td>{m}</td>' for m in marks[st])}</tr>" for st in marks)}
+        <tr bgcolor="blue">
+            <td>A</td>
+            <td>90</td>
+            <td>86</td>
+            <td>70</td>
+        </tr>
+        <tr bgcolor="blue">
+            <td>B</td>
+            <td>64</td>
+            <td>30</td>
+            <td>50</td>
+        </tr>
+        <tr bgcolor="blue">
+            <td>C</td>
+            <td>60</td>
+            <td>80</td>
+            <td>90</td>
+        </tr>
     </table>
 
-    <h2>Student Analysis</h2>
-    {student_analysis_html}
+    <h2 style="color: darkgreen;">Student Analysis</h2>
 
-    {overall_html}
+    <h3 style="color: purple;">A</h3>
+    <ul>
+        <li>Scores: 90, 86, 70</li>
+        <li>Average: 82</li>
+        <li>Median: 86</li>
+        <li>Mode: 90</li>
+        <li>Standard Deviation: 10.58</li>
+    </ul>
 
-    <h2>Graphs</h2>
-    <img src="subject_avg.png" width="400"><br>
-    <img src="student_avg.png" width="400">
-    <br><br>
-    <div style="font-size: 1.2em; font-weight: bold;">
-        By: Mohammed Taif, Midhun, Azman
+    <h3 style="color: purple;">B</h3>
+    <ul>
+        <li>Scores: 64, 30, 50</li>
+        <li>Average: 48</li>
+        <li>Median: 50</li>
+        <li>Mode: 64</li>
+        <li>Standard Deviation: 17.09</li>
+    </ul>
+
+    <h3 style="color: purple;">C</h3>
+    <ul>
+        <li>Scores: 60, 80, 90</li>
+        <li>Average: 76.67</li>
+        <li>Median: 80</li>
+        <li>Mode: 60</li>
+        <li>Standard Deviation: 15.28</li>
+    </ul>
+
+    <h2 style="color: darkgreen;">Overall Analysis</h2>
+    <ul>
+        <li><b>Top Performer:</b> A (82)</li>
+        <li><b>Weak Performer:</b> B (48)</li>
+        <li><b>Strongest Subject:</b> Maths (71.33)</li>
+        <li><b>Weakest Subject:</b> Science (65.33)</li>
+    </ul>
+
+    <h2 style="color: darkgreen;">Graphs</h2>
+    <div align="center">
+        <img src="subject_avg.png" width="400"><br><br>
+        <img src="student_avg.png" width="400">
     </div>
+
+    <p align="center" style="color: darkred; font-weight:bold;">
+        By: Mohammed Taif, Midhun, Azman
+    </p>
+
 </body>
 </html>
+
 """
 
 # Write to HTML file
