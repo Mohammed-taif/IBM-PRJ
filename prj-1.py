@@ -52,6 +52,7 @@ print("STUDENT PERFORMANCE ANALYSIS REPORT :\n")
 for students in marks:
     st_mean(students)
 
+#TOP PERFORMER AND WEAK PERFORMER
 top_avg=0
 top_std=None
 for students in marks:
@@ -79,6 +80,7 @@ for i, subject in enumerate(subjects):
 student_names = list(marks.keys())
 student_avgs = [statistics.mean(marks[student]) for student in marks]
 
+# Generating bar charts
 plt.bar(subjects, subject_avgs, color="skyblue")
 plt.title("Average Marks per Subject")
 plt.ylabel("Average Marks")

@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Online Blood Donation Management System</title>
+  <meta name="description" content="Register donors, view donors, and find nearby blood banks." />
+  <style>
+    :root{--accent:#c62828;--muted:#666}
+    body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin:0; background:#f7f7f8; color:#111}
+    header{background:linear-gradient(90deg,#fff 0,#ffecec 100%);padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .container{max-width:980px;margin:18px auto;padding:18px}
+    h1{margin:0 0 6px;font-size:20px}
+    p.lead{margin:0;color:var(--muted)}
+
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:18px;margin-top:18px}
+    @media (max-width:920px){.grid{grid-template-columns:1fr}}
+
+    .card{background:white;border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(16,24,40,.06)}
+    form .row{display:flex;gap:8px}
+    label{display:block;font-size:13px;margin-bottom:6px}
+    input[type=text],input[type=tel],input[type=number],select,textarea{width:100%;padding:8px;border-radius:6px;border:1px solid #e6e6e8;font-size:14px}
+    button{background:var(--accent);color:white;padding:10px 12px;border:none;border-radius:8px;cursor:pointer}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid #ffdede}
+    .small{font-size:13px;color:var(--muted)}
+
+    .donor-list{max-height:420px;overflow:auto;margin-top:10px}
+    .donor{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:8px;border:1px solid #f0f0f2;margin-bottom:8px}
+    .donor .meta{display:flex;gap:10px;align-items:center}
+    .dot{width:12px;height:12px;border-radius:50%;background:var(--accent);display:inline-block}
+
+    .mapwrap{height:420px;border-radius:8px;overflow:hidden}
+    #map{width:100%;height:100%}
+
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .search-row{display:flex;gap:8px}
+    .note{font-size:13px;color:#666;margin-top:8px}
+
+    footer{max-width:980px;margin:10px auto;padding:8px;text-align:center;color:#777;font-size:13px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Online Blood Donation Management System</h1>
+      <p class="lead">Register donors, view donors, and locate nearby blood banks using your browser's location.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <section class="card">
+        <h2 style="font-size:16px;margin-bottom:6px">Register as a Donor</h2>
+        <form id="donorForm" autocomplete="off">
+          <div class="row">
+            <div style="flex:1">
+              <label for="name">Full name</label>
+              <input id="name" required type="text" placeholder="Ahmad Khan" />
+            </div>
+            <div style="width:110px">
+              <label for="age">Age</label>
+              <input id="age" required type="number" min="16" max="80" />
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <div style="flex:1">
+              <label for="blood">Blood group</label>
+              <select id="blood" required>
+                <option value="">Select</option>
+                <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+              </select>
+            </div>
+            <div style="width:160px">
+              <label for="phone">Phone</label>
+              <input id="phone" type="tel" placeholder="+91 98xxxx" />
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label for="city">City / Area</label>
+            <input id="city" type="text" placeholder="Lucknow, UP" />
+          </div>
+
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+            <button type="button" id="locBtn">Use my location</button>
+            <button type="submit">Save donor</button>
+            <button type="button" id="clearBtn" class="ghost">Clear all</button>
+          </div>
+
+          <div class="note" id="formNote">Tip: click "Use my location" to attach latitude/longitude. This lets others find nearby donors.</div>
+
+          <!-- Hidden fields for coords -->
+          <input type="hidden" id="lat" />
+          <input type="hidden" id="lon" />
+        </form>
+
+        <hr style="margin:14px 0" />
+
+        <h3 style="margin:0 0 8px">Registered Donors</h3>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <input id="filterBlood" placeholder="Filter by blood group (e.g. O+)" style="flex:1;padding:8px;border-radius:6px;border:1px solid #e6e6e8" />
+          <button id="filterBtn" class="ghost">Filter</button>
+        </div>
+        <div class="donor-list card" id="donorList"></div>
+      </section>
+
+      <aside>
+        <div class="card" style="margin-bottom:18px">
+          <h3 style="margin:0 0 8px">Find Nearby Blood Banks</h3>
+          <div class="search-row">
+            <input id="searchRadius" type="number" value="10" min="1" max="100" style="flex:1;padding:8px;border-radius:6px;border:1px solid #e6e6e8" />
+            <button id="findBanks">Find banks (km)</button>
+          </div>
+          <div class="note">This demo uses OpenStreetMap's public search (Nominatim) to find "blood bank" near your location. It may return hospitals or blood centers.</div>
+        </div>
+
+        <div class="card mapwrap">
+          <div id="map">Map loading…</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer>Demo • No personal data leaves your browser unless you use the map search feature which makes requests to OpenStreetMap/Nominatim.</footer>
+
+  <script>
+    // --- Small single-file app: stores donors in localStorage and shows on map/search ---
+    const donorForm = document.getElementById('donorForm');
+    const donorList = document.getElementById('donorList');
+    const locBtn = document.getElementById('locBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const latField = document.getElementById('lat');
+    const lonField = document.getElementById('lon');
+    const filterBlood = document.getElementById('filterBlood');
+    const filterBtn = document.getElementById('filterBtn');
+
+    // Simple storage key
+    const STORAGE_KEY = 'bdms_donors_v1';
+
+    function getDonors(){
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') }
+      catch(e){ return [] }
+    }
+    function saveDonors(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)) }
+
+    function renderDonors(filter){
+      const donors = getDonors();
+      donorList.innerHTML = '';
+      const filtered = filter ? donors.filter(d => d.blood.toLowerCase().includes(filter.toLowerCase())) : donors;
+      if(filtered.length===0){ donorList.innerHTML = '<div class="small">No donors found.</div>'; return }
+      filtered.forEach((d,idx)=>{
+        const el = document.createElement('div'); el.className='donor';
+        el.innerHTML = `<div class="meta"><div style="display:flex;flex-direction:column"><strong>${escapeHtml(d.name)}</strong><span class="small">${d.blood} · ${d.age} yrs · ${escapeHtml(d.city||'')}</span></div></div>
+          <div style="text-align:right"><div class="small">${d.phone||''}</div><div style="margin-top:6px"><button data-idx="${idx}" class="call">View</button> <button data-idx="${idx}" class="remove">Remove</button></div></div>`;
+        donorList.appendChild(el);
+      })
+    }
+
+    function escapeHtml(s){ if(!s) return ''; return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
+
+    donorForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const age = document.getElementById('age').value;
+      const blood = document.getElementById('blood').value;
+      const phone = document.getElementById('phone').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const lat = latField.value || '';
+      const lon = lonField.value || '';
+      if(!name || !blood || !age) { alert('Please fill name, age and blood group.'); return }
+      const donors = getDonors();
+      donors.push({name,age,blood,phone,city,lat,lon,created:Date.now()});
+      saveDonors(donors);
+      donorForm.reset(); latField.value=''; lonField.value='';
+      renderDonors();
+      alert('Donor saved locally in your browser.');
+    })
+
+    donorList.addEventListener('click', e=>{
+      const btn = e.target.closest('button'); if(!btn) return;
+      const idx = Number(btn.dataset.idx);
+      const donors = getDonors();
+      if(btn.classList.contains('remove')){
+        if(!confirm('Remove this donor?')) return;
+        donors.splice(idx,1); saveDonors(donors); renderDonors();
+      } else if(btn.classList.contains('call')){
+        const d = donors[idx];
+        let info = `${d.name} (${d.blood}, ${d.age} yrs)\nPhone: ${d.phone || 'N/A'}\nCity: ${d.city || 'N/A'}`;
+        if(d.lat && d.lon) info += `\nCoordinates: ${d.lat}, ${d.lon}`;
+        alert(info);
+      }
+    })
+
+    clearBtn.addEventListener('click', ()=>{
+      if(confirm('Clear all donors stored in your browser?')){ localStorage.removeItem(STORAGE_KEY); renderDonors(); }
+    })
+
+    locBtn.addEventListener('click', ()=>{
+      if(!navigator.geolocation){ alert('Geolocation not supported by your browser'); return }
+      locBtn.disabled=true; locBtn.textContent='Getting location…';
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const {latitude,longitude} = pos.coords;
+        latField.value = latitude.toFixed(6);
+        lonField.value = longitude.toFixed(6);
+        locBtn.textContent = 'Location attached'; locBtn.disabled=false;
+      }, err=>{
+        alert('Could not get location: '+err.message); locBtn.disabled=false; locBtn.textContent='Use my location';
+      }, {enableHighAccuracy:true, timeout:10000})
+    })
+
+    filterBtn.addEventListener('click', ()=> renderDonors(filterBlood.value.trim()));
+
+    // --- Map and search for blood banks (uses Leaflet + OpenStreetMap Nominatim) ---
+    // We load Leaflet from CDN dynamically so this file stays single-file.
+    function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }) }
+    function loadCss(href){ const l=document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); }
+
+    // Initialize map once Leaflet loads
+    let map, userMarker, bankMarkers = [];
+    async function initMap(){
+      loadCss('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+      await loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+      map = L.map('map').setView([20.5937,78.9629], 5); // India view
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap contributors'}).addTo(map);
+      // show stored donors on the map
+      showStoredDonorsOnMap();
+    }
+
+    function clearBankMarkers(){ bankMarkers.forEach(m=>map.removeLayer(m)); bankMarkers = []; }
+
+    function showStoredDonorsOnMap(){
+      const donors = getDonors();
+      donors.forEach(d=>{
+        if(d.lat && d.lon){
+          const m = L.circleMarker([Number(d.lat),Number(d.lon)],{radius:6}).addTo(map).bindPopup(`<strong>${escapeHtml(d.name)}</strong><br>${escapeHtml(d.blood)} · ${escapeHtml(d.city||'')}`);
+          bankMarkers.push(m);
+        }
+      })
+    }
+
+    // Search nearby blood banks using Nominatim (OpenStreetMap)
+    async function findBloodBanks(){
+      if(!navigator.geolocation){ alert('Geolocation not supported'); return }
+      const radiusKm = Number(document.getElementById('searchRadius').value || 10);
+      document.getElementById('findBanks').disabled=true; document.getElementById('findBanks').textContent='Searching…';
+      navigator.geolocation.getCurrentPosition(async pos=>{
+        const lat = pos.coords.latitude; const lon = pos.coords.longitude;
+        if(userMarker) map.removeLayer(userMarker);
+        userMarker = L.marker([lat,lon]).addTo(map).bindPopup('You are here').openPopup();
+        map.setView([lat,lon], 13);
+
+        // Nominatim search for "blood bank" within bounding box derived from radius
+        // Construct bbox: approx degree difference for given km (very rough: 1 deg lat ~ 111 km)
+        const deg = radiusKm / 111;
+        const bbox = `${lat-deg},${lon-deg},${lat+deg},${lon+deg}`;
+        const q = 'blood bank';
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&bounded=1&viewbox=${encodeURIComponent(bbox)}&limit=30`;
+
+        try{
+          const resp = await fetch(url, {headers:{'Accept':'application/json','Referer':location.origin}});
+          const data = await resp.json();
+          clearBankMarkers();
+          if(!data || data.length===0){ alert('No blood banks found in that radius. Try increasing the km.'); document.getElementById('findBanks').disabled=false; document.getElementById('findBanks').textContent='Find banks (km)'; return }
+          data.forEach(item=>{
+            const m = L.marker([item.lat,item.lon]).addTo(map).bindPopup(`<strong>${escapeHtml(item.display_name.split(',')[0])}</strong><br>${escapeHtml(item.display_name)}`);
+            bankMarkers.push(m);
+          });
+          document.getElementById('findBanks').disabled=false; document.getElementById('findBanks').textContent='Find banks (km)';
+        }catch(err){ alert('Search failed: '+err.message); document.getElementById('findBanks').disabled=false; document.getElementById('findBanks').textContent='Find banks (km)'; }
+
+      }, err=>{ alert('Could not get your location: '+err.message); document.getElementById('findBanks').disabled=false; document.getElementById('findBanks').textContent='Find banks (km)'; }, {enableHighAccuracy:true, timeout:10000});
+    }
+
+    document.getElementById('findBanks').addEventListener('click', findBloodBanks);
+
+    // load map
+    initMap().catch(err=>{ document.getElementById('map').textContent = 'Map failed to load: '+err.message });
+
+    // initial render
+    renderDonors();
+
+  </script>
+</body>
+</html>
